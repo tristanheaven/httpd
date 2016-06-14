@@ -139,6 +139,9 @@ static char *format_date(time_t s)
 
 	size_t len = strlen(buf) + 1;
 	char *str = malloc(len);
+	if (!str)
+		exit(EXIT_FAILURE);
+
 	strncpy(str, buf, len);
 
 	return str;
@@ -261,6 +264,9 @@ static struct file_s *file_new(const char * const path,
 			case EEXIST:
 				*file_error = FILE_ERROR_MISSING;
 				break;
+
+			default:
+				*file_error = FILE_ERROR_DENIED;
 		}
 
 		return NULL;
@@ -286,6 +292,9 @@ static struct file_s *file_new(const char * const path,
 	}
 
 	struct file_s *file = calloc(sizeof(struct file_s), 1);
+	if (!file)
+		exit(EXIT_FAILURE);
+
 	file->fd = fd;
 	snprintf(file->path, PATH_MAX, "%s", path);
 	memcpy(&file->stat_buf, &stat_buf, sizeof(struct stat));
@@ -354,6 +363,8 @@ static void *handle_request(void *data)
 		goto out;
 	}
 
+	buffer[bytes] = '\0';
+
 //	printf("CLIENT SAYS:\n%s", buffer);
 
 	// Only accept GET requests
@@ -409,6 +420,7 @@ int main(int argc, char *argv[])
 
 	// SIGPIPE is raised when we try to write to a broken socket. Ignore it.
 	struct sigaction action;
+	memset(&action, 0, sizeof(action));
 	action.sa_handler = SIG_IGN;
 	if (sigaction(SIGPIPE, &action, NULL) < 0) {
 		perror("sigaction");
