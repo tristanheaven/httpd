@@ -1,5 +1,5 @@
-####useless-httpd
-######A very simple web server, written in C.
+# httpd
+## A very simple web server written in C
 
 Some cool features:
 * Compile-time configuration
